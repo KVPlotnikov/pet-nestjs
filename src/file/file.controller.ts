@@ -34,11 +34,17 @@ export class FileController {
   }
 
   @Get('read/:fileName')
-  async readFile(@Param('fileName') fileName: string): Promise<string> {
+  async readFile(@Param('fileName') fileName: string, @Res() res: Response) {
     try {
-      const data = await this.fileService.readFromFile(fileName);
-      logger.info(`Success reading file: ${fileName}`);
-      return data;
+      const filePath = this.fileService.getFilePath(fileName);
+      const stat = this.fileService.getFileStats(filePath);
+
+      res.setHeader('Content-Type', 'application/text');
+      res.setHeader('Content-Length', stat.size);
+
+      const stream = this.fileService.getFileStream(filePath);
+
+      stream.pipe(res);
     } catch (error) {
       logger.error(
         `Error writing to file: ${fileName}. Error: ${error.message}`,

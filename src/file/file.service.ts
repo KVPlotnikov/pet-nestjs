@@ -13,7 +13,11 @@ export class FileService {
   }
 
   public getFilePath(fileName: string) {
-    return path.resolve(this.dataDirectory, fileName);
+    const withExtension = fileName.includes('.txt')
+      ? fileName
+      : `${fileName}.txt`;
+
+    return path.resolve(this.dataDirectory, withExtension);
   }
 
   async createDir() {
@@ -24,10 +28,10 @@ export class FileService {
 
   async writeToFile(fileName: string, data: string): Promise<void> {
     const filePath = this.getFilePath(fileName);
-    this.createDir();
+    await this.createDir();
 
     try {
-      await fsPromises.writeFile(filePath, data, 'utf-8');
+      await fsPromises.appendFile(filePath, data, 'utf-8');
     } catch (error) {
       throw new Error(`Произошла ошибка при записи в файл: ${error.message}`);
     }
@@ -35,7 +39,7 @@ export class FileService {
 
   async readFromFile(fileName: string): Promise<string> {
     const filePath = this.getFilePath(fileName);
-    this.createDir();
+    await this.createDir();
     try {
       const data = await fsPromises.readFile(filePath, 'utf-8');
       return data;
@@ -45,7 +49,7 @@ export class FileService {
   }
 
   async getAvailableFiles(): Promise<string[]> {
-    this.createDir();
+    await this.createDir();
     try {
       const files = await fsPromises.readdir(this.dataDirectory);
       return files;
@@ -58,5 +62,9 @@ export class FileService {
 
   public getFileStream(filePath: string): Readable {
     return fs.createReadStream(filePath);
+  }
+
+  public getFileStats(filePath: string) {
+    return fs.statSync(filePath);
   }
 }

@@ -16,6 +16,9 @@ import { Response } from 'express';
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
+  /**
+   * @description Обработчик записи данных в файл
+   * */
   @Post('write')
   async writeFile(
     @Body() body: { fileName: string; data: string },
@@ -32,7 +35,9 @@ export class FileController {
       throw new BadRequestException(error.message);
     }
   }
-
+  /**
+   * @description Обработчик чтениях данных из файла
+   * */
   @Get('read/:fileName')
   async readFile(@Param('fileName') fileName: string, @Res() res: Response) {
     try {
@@ -53,6 +58,9 @@ export class FileController {
     }
   }
 
+  /**
+   * @description Обработчик получения списка доступных файлов
+   * */
   @Get('list')
   async getFilesList(): Promise<string[]> {
     try {
@@ -65,6 +73,9 @@ export class FileController {
     }
   }
 
+  /**
+   * @description Обработчик получения файла по названию
+   * */
   @Get('/get/:fileName')
   async getFile(
     @Param('fileName') fileName: string,

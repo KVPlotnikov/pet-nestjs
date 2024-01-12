@@ -4,14 +4,20 @@ import * as fsPromises from 'fs/promises';
 import * as path from 'path';
 import { Readable } from 'stream';
 
+/**
+ * @description Сервис для работы с файлами
+ * */
 @Injectable()
 export class FileService {
   private readonly dataDirectory: string;
 
   constructor() {
-    this.dataDirectory = path.join(__dirname, '..', 'data');
+    this.dataDirectory = path.resolve(__dirname, '..', '..', 'data');
   }
 
+  /**
+   * @description Метод получени пути до файла
+   * */
   public getFilePath(fileName: string) {
     const withExtension = fileName.includes('.txt')
       ? fileName
@@ -20,34 +26,35 @@ export class FileService {
     return path.resolve(this.dataDirectory, withExtension);
   }
 
+  /**
+   * @description Метод создания директории для хранения файла, в случае её отсутствия
+   * */
   async createDir() {
     if (!fs.existsSync(this.dataDirectory)) {
       await fsPromises.mkdir(this.dataDirectory, { recursive: true });
     }
   }
 
+  /**
+   * @description Метод записи в файл полученных данных
+   * @param {string} fileName - в какой файл записать
+   * @param {string} data - что записать
+   * */
   async writeToFile(fileName: string, data: string): Promise<void> {
     const filePath = this.getFilePath(fileName);
     await this.createDir();
 
     try {
-      await fsPromises.appendFile(filePath, data, 'utf-8');
+      await fsPromises.appendFile(filePath, `\n${data}`, 'utf-8');
     } catch (error) {
       throw new Error(`Произошла ошибка при записи в файл: ${error.message}`);
     }
   }
 
-  async readFromFile(fileName: string): Promise<string> {
-    const filePath = this.getFilePath(fileName);
-    await this.createDir();
-    try {
-      const data = await fsPromises.readFile(filePath, 'utf-8');
-      return data;
-    } catch (error) {
-      throw new Error(`Произошла ошибка при чтении файла: ${error.message}`);
-    }
-  }
-
+  /**
+   * @description Метод получения списка файлов, доступных для чтения
+   * @returns {Promise<string[]>} - список имен файлов
+   * */
   async getAvailableFiles(): Promise<string[]> {
     await this.createDir();
     try {
